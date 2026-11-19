@@ -8,10 +8,12 @@ import com.example.task_management.dto.AuthResponse;
 import com.example.task_management.dto.LoginRequest;
 import com.example.task_management.dto.RegisterRequest;
 import com.example.task_management.entity.AppUser;
+import com.example.task_management.exception.InvalidCredentialsException;
+import com.example.task_management.exception.UserAlreadyExistsException;
 import com.example.task_management.repository.UserRepository;
 import com.example.task_management.security.JwtService;
 
-@Service 
+@Service
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -30,7 +32,7 @@ public class AuthService {
     public AuthResponse register(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("Email is already registered");
+            throw new UserAlreadyExistsException("Email is already registered");
         }
 
         AppUser user = new AppUser();
@@ -47,12 +49,11 @@ public class AuthService {
     public AuthResponse login(LoginRequest request) {
 
         AppUser user = userRepository.findByEmail(request.email())
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Invalid email or password"));
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
 
         if (!passwordEncoder.matches(
                 request.password(), user.getPassword())) {
-            throw new IllegalArgumentException("Invalid email or password");
+            throw new InvalidCredentialsException("Invalid email or password");
         }
 
         String token = jwtService.generateToken(user.getEmail());
