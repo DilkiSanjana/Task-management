@@ -4,13 +4,10 @@ import java.time.LocalDate;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public record createTaskRequest(
-    @NotBlank(message = "Title is required")
-    @Size(max = 150, message = "Title must not exceed 150 characters")
-    String title,
+public record CreateTaskRequest(
+        @NotBlank(message = "Title is required") @Size(max = 150, message = "Title must not exceed 150 characters") String title,
 
-    @Size(max = 2000, message = "Description must not exceed 2000 characters")
-    String description,
+        @Size(max = 2000, message = "Description must not exceed 2000 characters") String description,
 
-    LocalDate dueDate
-) {}
+        LocalDate dueDate) {
+}
