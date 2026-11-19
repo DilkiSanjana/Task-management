@@ -1,6 +1,6 @@
-
 package com.example.task_management.config;
 
+import com.example.task_management.security.CustomAuthenticationEntryPoint;
 import com.example.task_management.security.JwtAuthenticationFilter;
 
 import org.springframework.context.annotation.Bean;
@@ -14,30 +14,34 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+        private final JwtAuthenticationFilter jwtAuthenticationFilter;
+        private final CustomAuthenticationEntryPoint authenticationEntryPoint; // NEW
 
-    public SecurityConfig(
-            JwtAuthenticationFilter jwtAuthenticationFilter) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-    }
+        public SecurityConfig(
+                        JwtAuthenticationFilter jwtAuthenticationFilter,
+                        CustomAuthenticationEntryPoint authenticationEntryPoint) {
+                this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+                this.authenticationEntryPoint = authenticationEntryPoint; // NEW
+        }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)
-            throws Exception {
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http)
+                        throws Exception {
 
-        return http
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .anyRequest().authenticated())
-                .httpBasic(AbstractHttpConfigurer::disable)
-                .formLogin(AbstractHttpConfigurer::disable)
-                .addFilterBefore(
-                        jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class)
-                .build();
-    }
+                return http
+                                .csrf(AbstractHttpConfigurer::disable)
+                                .sessionManagement(session -> session.sessionCreationPolicy(
+                                                SessionCreationPolicy.STATELESS))
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers("/api/auth/**", "/error").permitAll() // added /error
+                                                .anyRequest().authenticated())
+                                .httpBasic(AbstractHttpConfigurer::disable)
+                                .formLogin(AbstractHttpConfigurer::disable)
+                                .exceptionHandling(ex -> ex // NEW
+                                                .authenticationEntryPoint(authenticationEntryPoint))
+                                .addFilterBefore(
+                                                jwtAuthenticationFilter,
+                                                UsernamePasswordAuthenticationFilter.class)
+                                .build();
+        }
 }
