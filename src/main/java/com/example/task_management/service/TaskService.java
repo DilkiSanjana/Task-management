@@ -1,22 +1,22 @@
 package com.example.task_management.service;
 
-
 import com.example.task_management.dto.TaskResponse;
 import com.example.task_management.entity.AppUser;
 import com.example.task_management.enums.TaskStatus;
+import com.example.task_management.exception.ResourceNotFoundException;
 import com.example.task_management.repository.TaskRepository;
 import com.example.task_management.repository.UserRepository;
 import com.example.task_management.entity.Task;
-import com.example.task_management.dto.createTaskRequest;
-import com.example.task_management.dto.updateTaskRequest;
+import com.example.task_management.dto.CreateTaskRequest;
+import com.example.task_management.dto.UpdateTaskRequest;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service 
-@Transactional 
+@Service
+@Transactional
 public class TaskService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
@@ -30,7 +30,7 @@ public class TaskService {
 
     // Create a new task
     public TaskResponse createTask(
-            createTaskRequest request, String email) {
+            CreateTaskRequest request, String email) {
 
         AppUser owner = getUser(email);
 
@@ -82,7 +82,7 @@ public class TaskService {
     // Update an existing task
     public TaskResponse updateTask(
             Long taskId,
-            updateTaskRequest request,
+            UpdateTaskRequest request,
             String email) {
 
         AppUser owner = getUser(email);
@@ -115,18 +115,16 @@ public class TaskService {
     // Find user by email
     private AppUser getUser(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not found"));
     }
 
     // Find task only if it belongs to the logged-in user
     private Task findOwnedTask(Long taskId, Long ownerId) {
         return taskRepository.findByIdAndOwnerId(
                 taskId, ownerId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Task not found"));
     }
 
     // Convert Task entity into TaskResponse DTO
@@ -138,7 +136,6 @@ public class TaskService {
                 task.getStatus(),
                 task.getDueDate(),
                 task.getCreatedAt(),
-                task.getUpdatedAt()
-        );
+                task.getUpdatedAt());
     }
 }
