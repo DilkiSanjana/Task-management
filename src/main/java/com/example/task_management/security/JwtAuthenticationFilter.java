@@ -56,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
 
                         var userDetails = User.withUsername(user.getEmail())
                                 .password(user.getPassword())
-                                .authorities(Collections.emptyList())
+                                .authorities(user.getRole())
                                 .build();
 
                         var authentication =
@@ -76,6 +76,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
             }
 
         } catch (Exception exception) {
+            exception.printStackTrace();
             SecurityContextHolder.clearContext();
         }
 

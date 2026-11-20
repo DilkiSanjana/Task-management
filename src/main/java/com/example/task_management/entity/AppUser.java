@@ -21,6 +21,9 @@ public class AppUser {
     private String email;
 
     @Column(nullable = false)
+    private String role="ROLE_USER";
+
+    @Column(nullable = false)
     private String password;
 
     @Column(nullable = false, updatable = false)
@@ -36,6 +39,10 @@ public class AppUser {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+
+        if (role == null || role.isBlank()) {
+        role = "ROLE_USER";
+        }
     }
 
     public AppUser() {
@@ -67,5 +74,13 @@ public class AppUser {
 
     public List<Task> getTasks() {
         return tasks;
+    }
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+       this.role = role;
+
     }
 }

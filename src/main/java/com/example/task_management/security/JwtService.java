@@ -23,12 +23,13 @@ public class JwtService {
         );
     }
 
-    public String generateToken(String email) {
+    public String generateToken(String email,String role) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expiration);
 
         return Jwts.builder()
                 .subject(email)
+                .claim("role", role)
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(getSigningKey())
@@ -49,4 +50,12 @@ public class JwtService {
 
         return tokenEmail.equals(email);
     }
+    public String extractRole(String token) {
+    return Jwts.parser()
+            .verifyWith(getSigningKey())
+            .build()
+            .parseSignedClaims(token)
+            .getPayload()
+            .get("role", String.class);
+}
 }
