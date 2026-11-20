@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import org.springdoc.core.annotations.ParameterObject;
+
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import com.example.task_management.dto.TaskResponse;
 import com.example.task_management.service.TaskService;
@@ -15,6 +17,7 @@ import com.example.task_management.service.TaskService;
 @RequestMapping("/api/admin")
 @SecurityRequirement(name = "bearerAuth")
 public class AdminController {
+
     private final TaskService taskService;
 
     public AdminController(TaskService taskService) {
@@ -24,7 +27,9 @@ public class AdminController {
     @GetMapping("/tasks")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<TaskResponse>> getAllTasks(
-            @PageableDefault(size = 10) Pageable pageable) {
+            @ParameterObject
+            @PageableDefault(size = 10, sort = "createdAt")
+            Pageable pageable) {
 
         return ResponseEntity.ok(taskService.getAllTasks(pageable));
     }
