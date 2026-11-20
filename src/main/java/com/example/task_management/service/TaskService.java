@@ -1,12 +1,13 @@
+
 package com.example.task_management.service;
 
 import com.example.task_management.dto.TaskResponse;
 import com.example.task_management.entity.AppUser;
+import com.example.task_management.entity.Task;
 import com.example.task_management.enums.TaskStatus;
 import com.example.task_management.exception.ResourceNotFoundException;
 import com.example.task_management.repository.TaskRepository;
 import com.example.task_management.repository.UserRepository;
-import com.example.task_management.entity.Task;
 import com.example.task_management.dto.CreateTaskRequest;
 import com.example.task_management.dto.UpdateTaskRequest;
 
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class TaskService {
+
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
 
@@ -102,14 +104,36 @@ public class TaskService {
         return toResponse(updatedTask);
     }
 
-    // Delete a task
-    public void deleteTask(Long taskId, String email) {
+    // Search tasks by keyword and order by due date
+    public Page<TaskResponse> searchTasks(
+            String email,
+            String keyword,
+            String sortDir,
+            Pageable pageable) {
 
         AppUser owner = getUser(email);
 
-        Task task = findOwnedTask(taskId, owner.getId());
+        // Determine sorting on dueDate
+        org.springframework.data.domain.Sort sort =
+                org.springframework.data.domain.Sort.by("dueDate");
 
-        taskRepository.delete(task);
+        if ("desc".equalsIgnoreCase(sortDir)) {
+            sort = sort.descending();
+        } else {
+            sort = sort.ascending();
+        }
+
+        // Preserve original page number and size
+        org.springframework.data.domain.PageRequest pageRequest =
+                org.springframework.data.domain.PageRequest.of(
+                        pageable.getPageNumber(),
+                        pageable.getPageSize(),
+                        sort);
+
+        Page<Task> page = taskRepository.findByOwnerIdAndKeyword(
+                owner.getId(), keyword, pageRequest);
+
+        return page.map(this::toResponse);
     }
 
     // Find user by email
@@ -137,5 +161,24 @@ public class TaskService {
                 task.getDueDate(),
                 task.getCreatedAt(),
                 task.getUpdatedAt());
+    }
+
+    // Delete a task belonging to the logged-in user
+    public void deleteTask(Long id, String email) {
+
+        AppUser owner = getUser(email);
+
+        Task task = findOwnedTask(id, owner.getId());
+
+        taskRepository.delete(task);
+    }
+
+    // Get all tasks (admin only)
+    @Transactional(readOnly = true)
+    public Page<TaskResponse> getAllTasks(Pageable pageable) {
+
+        Page<Task> tasks = taskRepository.findAll(pageable);
+
+        return tasks.map(this::toResponse);
     }
 }
