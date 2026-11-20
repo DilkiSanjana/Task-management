@@ -86,5 +86,19 @@ public class TaskController {
 
                 return ResponseEntity.noContent().build();
         }
+        // Search tasks by title or description
+        @GetMapping("/search")
+        public ResponseEntity<Page<TaskResponse>> searchTasks(
+                @RequestParam String keyword,
+                @RequestParam(defaultValue = "asc") String sortDir,
+                @PageableDefault(size = 10) Pageable pageable,
+                Authentication authentication) {
 
+        return ResponseEntity.ok(
+                taskService.searchTasks(
+                        authentication.getName(),
+                        keyword,
+                        sortDir,
+                        pageable));
+                }
 }
