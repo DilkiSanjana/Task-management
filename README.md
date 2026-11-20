@@ -4,6 +4,11 @@ A JWT-secured REST API for managing personal tasks, built using **Java 25**, **S
 
 The application supports user authentication, task management, role-based access control, keyword searching, database migrations, and request/error logging.
 
+```markdown
+## Repository
+
+GitHub repository: https://github.com/DilkiSanjana/Task-management.git
+
 ## Features
 
 - User registration and login with JWT authentication.
@@ -59,7 +64,8 @@ cd task-management
 Open PostgreSQL or pgAdmin and execute:
 
 ```sql
-CREATE DATABASE task_management_db;
+CREATE DATABASE task_management_db; 
+CREATE DATABASE task_management_test_db;
 ```
 
 ### 3. Configure environment variables
