@@ -29,6 +29,9 @@ public class GlobalExceptionHandler {
             AuthorizationDeniedException ex,
             HttpServletRequest request) {
 
+        logger.warn("Access denied: {} {}",
+                request.getMethod(), request.getRequestURI());
+
         return buildResponse(
                 HttpStatus.FORBIDDEN,
                 "You do not have permission to access this resource",
@@ -41,6 +44,11 @@ public class GlobalExceptionHandler {
             ResourceNotFoundException ex,
             HttpServletRequest request) {
 
+        logger.warn("Resource not found: {} {} | Reason: {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                ex.getMessage());
+
         return buildResponse(
                 HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
@@ -50,6 +58,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUserAlreadyExists(
             UserAlreadyExistsException ex,
             HttpServletRequest request) {
+
+        logger.warn("Conflict: {} {} | Reason: {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                ex.getMessage());
 
         return buildResponse(
                 HttpStatus.CONFLICT, ex.getMessage(), request);
@@ -61,11 +74,14 @@ public class GlobalExceptionHandler {
             InvalidCredentialsException ex,
             HttpServletRequest request) {
 
+        logger.warn("Invalid credentials: {} {}",
+                request.getMethod(), request.getRequestURI());
+
         return buildResponse(
                 HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
     }
 
-    // Handle validation errors
+    // Validation errors
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(
             MethodArgumentNotValidException ex,
@@ -78,15 +94,23 @@ public class GlobalExceptionHandler {
                         + error.getDefaultMessage())
                 .collect(Collectors.joining(", "));
 
+        logger.warn("Validation failed: {} {} | Reason: {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                message);
+
         return buildResponse(
                 HttpStatus.BAD_REQUEST, message, request);
     }
 
-    // Handle invalid JSON or invalid enum/date values
+    // Invalid JSON or field values
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleInvalidJson(
             HttpMessageNotReadableException ex,
             HttpServletRequest request) {
+
+        logger.warn("Invalid request body: {} {}",
+                request.getMethod(), request.getRequestURI());
 
         return buildResponse(
                 HttpStatus.BAD_REQUEST,
@@ -94,11 +118,16 @@ public class GlobalExceptionHandler {
                 request);
     }
 
-    // Handle constraint violations
+    // Constraint violations
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handleConstraintViolation(
             ConstraintViolationException ex,
             HttpServletRequest request) {
+
+        logger.warn("Constraint violation: {} {} | Reason: {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                ex.getMessage());
 
         return buildResponse(
                 HttpStatus.BAD_REQUEST,
@@ -106,18 +135,17 @@ public class GlobalExceptionHandler {
                 request);
     }
 
-    // Handle unexpected errors
+    // Unexpected errors
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(
             Exception ex,
             HttpServletRequest request) {
 
         logger.error(
-                "Unexpected error occurred for request: {} {}",
+                "Unexpected error: {} {}",
                 request.getMethod(),
                 request.getRequestURI(),
-                ex
-        );
+                ex);
 
         return buildResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
